@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Review Detection</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #e9eff4;
+            padding: 50px;
+        }
+
+        #container {
+            max-width: 600px;
+            margin: auto;
+            background: #ffffff;
+            padding: 30px 40px;
+            border-radius: 16px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #34495e;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 16px;
+            border: 1px solid #bdc3c7;
+            border-radius: 10px;
+            box-sizing: border-box;
+            resize: vertical;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 4px rgba(76, 175, 80, 0.6);
+        }
+
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #result {
+            margin-top: 25px;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .real {
+            color: #27ae60;
+        }
+
+        .fake {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h2>Review Detection</h2>
+        <form id="reviewForm">
+            <label for="message">Enter a review:</label>
+            <textarea id="message" name="message" required></textarea>
+            <button type="submit">Submit</button>
+        </form>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('reviewForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const message = document.getElementById('message').value;
+            const resultDiv = document.getElementById('result');
+
+            resultDiv.textContent = "Predicting...";
+            resultDiv.className = '';
+
+            try {
+                const response = await fetch('/predict/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (data.Prediction === 1) {
+                        resultDiv.textContent = "Review is FAKE";
+                        resultDiv.className = 'fake';
+                    } else {
+                        resultDiv.textContent = "Review is REAL";
+                        resultDiv.className = 'real';
+                    }
+                } else {
+                    resultDiv.textContent = `Error: ${data.detail}`;
+                    resultDiv.className = '';
+                }
+            } catch (error) {
+                resultDiv.textContent = 'An error occurred while making the request.';
+                resultDiv.className = '';
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>
